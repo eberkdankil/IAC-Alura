@@ -20,6 +20,18 @@ resource "aws_instance" "app_server" {
 
   key_name = "iac-alura"
 
+  /*  user_data = <<EOF
+
+#!/bin/bash
+
+sudo apt update && sudo apt upgrade -y
+cd /home/ubuntu
+echo "<h1>Hello World</h1>" > index.html
+nohup busybox httpd -f -p 8080 &
+
+EOF
+*/
+
   tags = {
     Name = "Instancia Terraform"
   }
