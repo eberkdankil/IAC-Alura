@@ -1,9 +1,35 @@
 - hosts: terraform-ansible
   tasks:
-    - name: criando arquivo index.html
-      ansible.builtin.copy:
-        dest: /home/ubuntu/index.html
-        content: "<h1>Hello World with ansible and terraform</h1>"
-      
-    - name: criando servidor
-      ansible.builtin.shell: nohup busybox httpd -f -p 8080 &
+    - name: Instalando o python3, virtual env
+      apt:
+        name:
+          - python3-pip
+          - python3-venv
+          - virtualenv
+        update_cache: true
+      become: true
+    
+    - name: Instalando dependencias com pip (django e djangorestframework)
+      pip:
+        virtualenv: /home/ubuntu/tcc/venv
+        name:
+          - django
+          - djangorestframework
+      become: true
+
+    - name: Iniciando projeto django
+      ansible.builtin.shell: 
+        cmd: '/home/ubuntu/tcc/venv/bin/django-admin startproject setup /home/ubuntu/tcc'
+      become: true
+
+    - name: Alterando o arquivo settings.py
+      ansible.builtin.replace:
+        path: /home/ubuntu/tcc/setup/settings.py
+        regexp: 'ALLOWED_HOSTS = \[\]'
+        replace: 'ALLOWED_HOSTS = ["*"]'
+      become: true
+
+    - name: Iniciando o servidor django
+      ansible.builtin.shell: 
+        cmd: '. /home/ubuntu/tcc/venv/bin/activate; nohup /home/ubuntu/tcc/manage.py runserver 0.0.0.0:8000 > /home/ubuntu/tcc/runserver.log 2>&1 &'
+      become: true
